@@ -1,4 +1,4 @@
-// PDF.js ワーカー設定（CDNから読み込み）
+// PDF.js のワーカーをCDNから読み込み（GitHub Pages対応）
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js';
 
 console.log('✅ app.js loaded');
@@ -28,7 +28,7 @@ document.getElementById('pdf-upload').addEventListener('change', async (e) => {
       allLines.push(...lines);
     }
 
-    const quotes = extractQuotes(allLines);
+    const quotes = extractQuotesBottomUp(allLines);
 
     const output = document.getElementById('output');
     if (!output) {
@@ -58,32 +58,37 @@ document.getElementById('pdf-upload').addEventListener('change', async (e) => {
   reader.readAsArrayBuffer(file);
 });
 
-function extractQuotes(lines) {
+// 🔍 名言構造を末尾からさかのぼって検出するロジック
+function extractQuotesBottomUp(lines) {
   const results = [];
   let day = 1;
 
-  for (let i = 0; i < lines.length - 6; i++) {
-    const isYear = lines[i + 5] === '2026';
-    const isNumber = /^\d{3}$/.test(lines[i + 6]);
+  for (let i = lines.length - 1; i >= 6; i--) {
+    const year = lines[i - 1];
+    const serial = lines[i];
 
-    if (isYear && isNumber) {
-      const person = lines[i];
-      const info = lines[i + 1];
-      const en = lines[i + 2];
-      const ja1 = lines[i + 3];
-      const ja2 = lines[i + 4];
+    if (year === '2026' && /^\d{3}$/.test(serial)) {
+      const ja2 = lines[i - 2];
+      const ja1 = lines[i - 3];
+      const en = lines[i - 4];
+      const author = lines[i - 5];
+      const person = lines[i - 6];
 
-      const ja = (ja1 + ' ' + ja2).replace(/\s+/g, ' ').trim();
+      const isValidAuthor = /^[（(][0-9B.C.～年・（）\s\-～]+/.test(author);
+      const isEnglish = /[a-zA-Z]/.test(en);
+      const isJapanese = /[ぁ-んァ-ン一-龯]/.test(ja1 + ja2);
 
-      results.push({
-        day: `1/${day}`,
-        ja,
-        en,
-        author: `${person}${info}`
-      });
-
-      i += 6; // 次の名言へ
-      day++;
+      if (isValidAuthor && isEnglish && isJapanese) {
+        const ja = (ja1 + ' ' + ja2).replace(/\s+/g, ' ').trim();
+        results.unshift({
+          day: `1/${day}`,
+          ja,
+          en,
+          author: `${person}${author}`
+        });
+        i -= 6;
+        day++;
+      }
     }
   }
 
