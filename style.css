@@ -1,23 +1,29 @@
 body {
   font-family: sans-serif;
-  padding: 20px;
+  padding: 2em;
+  background: #f9f9f9;
+  color: #333;
 }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-top: 20px;
+h1 {
+  font-size: 1.8em;
+  margin-bottom: 1em;
 }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
+label {
+  font-weight: bold;
 }
 
-th {
-  background-color: #f0f0f0;
+#output {
+  margin-top: 2em;
 }
 
-tr:nth-child(even) {
-  background-color: #f9f9f9;
+#output h3 {
+  margin: 1.5em 0 0.5em;
+  color: #444;
+}
+
+#output p {
+  margin: 0.3em 0;
+  line-height: 1.6;
 }
